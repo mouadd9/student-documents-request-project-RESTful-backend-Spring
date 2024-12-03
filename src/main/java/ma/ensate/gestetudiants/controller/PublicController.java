@@ -1,19 +1,17 @@
 package ma.ensate.gestetudiants.controller;
 
-import ma.ensate.gestetudiants.dto.DemandeDTO;
-import ma.ensate.gestetudiants.dto.ReclamationDTO;
-import ma.ensate.gestetudiants.entity.Demande;
-import ma.ensate.gestetudiants.entity.Reclamation;
+import ma.ensate.gestetudiants.dto.demande.DemandeRequestDTO;
+import ma.ensate.gestetudiants.dto.demande.DemandeResponseDTO;
+import ma.ensate.gestetudiants.dto.reclamation.ReclamationRequestDTO;
+import ma.ensate.gestetudiants.dto.reclamation.ReclamationResponseDTO;
 import ma.ensate.gestetudiants.service.DemandeService;
 import ma.ensate.gestetudiants.service.ReclamationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/public")
@@ -26,14 +24,14 @@ public class PublicController {
     ReclamationService reclamationService;
 
     @PostMapping("/demandes")
-    public ResponseEntity<Demande> createDemande(@Validated @RequestBody DemandeDTO demandeDTO) {
-        Demande demande = demandeService.createDemande(demandeDTO);
-        return new ResponseEntity<>(demande, HttpStatus.CREATED);
+    public ResponseEntity<DemandeResponseDTO> createDemande(@Validated @RequestBody DemandeRequestDTO demandeDTO) {
+        DemandeResponseDTO demandeResponse = demandeService.createDemande(demandeDTO);
+        return new ResponseEntity<>(demandeResponse, HttpStatus.CREATED);
     }
 
     @PostMapping("/reclamations")
-    public ResponseEntity<Reclamation> createReclamation(@Validated @RequestBody ReclamationDTO reclamationDTO) {
-        Reclamation reclamation = reclamationService.createReclamation(reclamationDTO);
-        return new ResponseEntity<>(reclamation, HttpStatus.CREATED);
+    public ResponseEntity<ReclamationResponseDTO> createReclamation(@Validated @RequestBody ReclamationRequestDTO reclamationDTO) {
+        ReclamationResponseDTO reclamationResponse = reclamationService.createReclamation(reclamationDTO);
+        return new ResponseEntity<>(reclamationResponse, HttpStatus.CREATED);
     }
 }

@@ -1,10 +1,10 @@
-package ma.ensate.gestetudiants.dto;
+package ma.ensate.gestetudiants.dto.auth;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class AuthResponse {
+public class LoginResponseDTO {
     private String jwt;
 }

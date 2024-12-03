@@ -1,14 +1,17 @@
 package ma.ensate.gestetudiants.service;
 
-import ma.ensate.gestetudiants.dto.DemandeDTO;
-import ma.ensate.gestetudiants.entity.Demande;
+import ma.ensate.gestetudiants.dto.demande.DemandeRequestDTO;
+import ma.ensate.gestetudiants.dto.demande.DemandeResponseDTO;
 
 import java.util.List;
 
 public interface DemandeService {
-    Demande createDemande(DemandeDTO demandeDTO);
-    List<Demande> getAllDemandes();
-    Demande approveDemande(Long id);
-    Demande rejectDemande(Long id);
+    DemandeResponseDTO createDemande(DemandeRequestDTO demandeDTO);
+
+    List<DemandeResponseDTO> getAllDemandes();
+
+    DemandeResponseDTO approveDemande(Long id);
+
+    DemandeResponseDTO rejectDemande(Long id);
 
 }

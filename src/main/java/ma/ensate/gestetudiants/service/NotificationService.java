@@ -1,11 +1,11 @@
 package ma.ensate.gestetudiants.service;
 
-import ma.ensate.gestetudiants.entity.Demande;
-import ma.ensate.gestetudiants.entity.Etudiant;
-import ma.ensate.gestetudiants.entity.Reclamation;
+import ma.ensate.gestetudiants.dto.demande.DemandeResponseDTO;
+import ma.ensate.gestetudiants.dto.etudiant.EtudiantBasicDTO;
+import ma.ensate.gestetudiants.dto.reclamation.ReclamationResponseDTO;
 
 public interface NotificationService {
-    void sendDemandeApprovedEmail(Etudiant etudiant, Demande demande);
-    void sendDemandeRejectedEmail(Etudiant etudiant, Demande demande);
-    void sendReclamationTreatedEmail(Etudiant etudiant, Reclamation reclamation);
+    void sendDemandeApprovedEmail(EtudiantBasicDTO etudiant, DemandeResponseDTO demande);
+    void sendDemandeRejectedEmail(EtudiantBasicDTO etudiant, DemandeResponseDTO demande);
+    void sendReclamationTreatedEmail(EtudiantBasicDTO etudiant, ReclamationResponseDTO reclamation);
 }

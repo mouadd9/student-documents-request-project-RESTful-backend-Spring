@@ -1,9 +1,9 @@
-package ma.ensate.gestetudiants.dto;
+package ma.ensate.gestetudiants.dto.auth;
 
 import lombok.Data;
 
 @Data
-public class AuthRequest {
+public class LoginRequestDTO {
     private String username;
     private String password;
 }

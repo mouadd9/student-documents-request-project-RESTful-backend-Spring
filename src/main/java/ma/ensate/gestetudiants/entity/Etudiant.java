@@ -1,9 +1,6 @@
 package ma.ensate.gestetudiants.entity;
 
 import java.util.List;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -25,10 +22,8 @@ public class Etudiant {
     private String cin;
 
     @OneToMany(mappedBy = "etudiant", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonIgnore
     private List<Demande> demandes;
 
     @OneToMany(mappedBy = "etudiant", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonIgnore
     private List<Reclamation> reclamations;
 }
