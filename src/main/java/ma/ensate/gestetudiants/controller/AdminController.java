@@ -2,15 +2,20 @@ package ma.ensate.gestetudiants.controller;
 
 import ma.ensate.gestetudiants.dto.demande.DemandeResponseDTO;
 import ma.ensate.gestetudiants.dto.reclamation.ReclamationResponseDTO;
+import ma.ensate.gestetudiants.dto.statistiques.StatistiquesDTO;
 import ma.ensate.gestetudiants.service.DemandeService;
 import ma.ensate.gestetudiants.service.NotificationService;
 import ma.ensate.gestetudiants.service.ReclamationService;
+import ma.ensate.gestetudiants.service.StatistiquesService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import org.springframework.web.bind.annotation.GetMapping;
+
 
 @RestController
 @RequestMapping("/api/admin")
@@ -24,6 +29,9 @@ public class AdminController {
 
     @Autowired
     private NotificationService notificationService;
+
+    @Autowired
+    private StatistiquesService statistiquesService;
 
     @GetMapping("/demandes")
     public ResponseEntity<List<DemandeResponseDTO>> getAllDemandes() {
@@ -67,5 +75,11 @@ public class AdminController {
                 treatedReclamation
         );
         return ResponseEntity.ok(treatedReclamation);
+    }
+
+    @GetMapping("/statistiques")
+    public ResponseEntity<StatistiquesDTO> getStatistiques() {
+        StatistiquesDTO stats = statistiquesService.getStatistiques();
+        return ResponseEntity.ok(stats);
     }
 }
