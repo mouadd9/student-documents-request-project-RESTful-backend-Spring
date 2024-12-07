@@ -2,7 +2,11 @@ package ma.ensate.gestetudiants.mapper;
 
 import ma.ensate.gestetudiants.dto.etudiant.EtudiantBasicDTO;
 import ma.ensate.gestetudiants.dto.etudiant.EtudiantDetailedDTO;
+import ma.ensate.gestetudiants.dto.etudiant.NoteDTO;
 import ma.ensate.gestetudiants.entity.Etudiant;
+import ma.ensate.gestetudiants.entity.Note;
+
+import java.util.stream.Collectors;
 
 public class EtudiantMapper {
 
@@ -27,6 +31,15 @@ public class EtudiantMapper {
         dto.setFiliere(etudiant.getFiliere());
         dto.setNiveau(etudiant.getNiveau());
         dto.setAnneeUniversitaire(etudiant.getAnneeUniversitaire());
+        dto.setNotes(etudiant.getNotes().stream().map(EtudiantMapper::toNoteDTO).collect(Collectors.toList()));
+        return dto;
+    }
+
+    public static NoteDTO toNoteDTO(Note note) {
+        NoteDTO dto = new NoteDTO();
+        dto.setId(note.getId());
+        dto.setModule(note.getModule());
+        dto.setValeur(note.getValeur());
         return dto;
     }
 }

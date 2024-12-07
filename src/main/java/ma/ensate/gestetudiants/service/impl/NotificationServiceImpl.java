@@ -28,15 +28,36 @@ public class NotificationServiceImpl implements NotificationService {
             MimeMessageHelper helper = new MimeMessageHelper(message, true);
 
             helper.setTo(etudiant.getEmail());
-            helper.setSubject("Votre demande a été approuvée");
-            helper.setText("Bonjour " + " " + etudiant.getNom() + ",\n\n" +
-                    "Votre demande de (" + demande.getTypeDocument() + ") a été approuvée.\n\n" +
-                    "Veuillez trouver votre attestation de scolarité en pièce jointe.\n\n" +
-                    "Cordialement,\nAdministration");
 
-            // Ajouter la pièce jointe
-            helper.addAttachment("Attestation_Scolarite_" + etudiant.getNom() + ".pdf",
-                    new ByteArrayResource(documentBytes));
+            String subject;
+            String body;
+            String attachmentName;
+
+            switch (demande.getTypeDocument()) {
+                case ATTESTATION_SCOLARITE:
+                    subject = "Votre Attestation de Scolarité a été approuvée";
+                    body = "Bonjour " + etudiant.getNom() + ",\n\n" +
+                            "Votre demande d'Attestation de Scolarité a été approuvée.\n\n" +
+                            "Veuillez trouver votre attestation en pièce jointe.\n\n" +
+                            "Cordialement,\nAdministration";
+                    attachmentName = "Attestation_Scolarite_" + etudiant.getNom() + ".pdf";
+                    break;
+                case RELEVE_NOTES:
+                    subject = "Votre Relevé de Notes a été approuvé";
+                    body = "Bonjour " + etudiant.getNom() + ",\n\n" +
+                            "Votre demande de Relevé de Notes a été approuvée.\n\n" +
+                            "Veuillez trouver votre relevé de notes en pièce jointe.\n\n" +
+                            "Cordialement,\nAdministration";
+                    attachmentName = "Releve_de_Notes_" + etudiant.getNom() + ".pdf";
+                    break;
+                default:
+                    throw new IllegalArgumentException("Type de document inconnu: " + demande.getTypeDocument());
+            }
+
+            helper.setSubject(subject);
+            helper.setText(body);
+
+            helper.addAttachment(attachmentName, new ByteArrayResource(documentBytes));
 
             mailSender.send(message);
         } catch (MessagingException e) {

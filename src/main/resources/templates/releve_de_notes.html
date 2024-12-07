@@ -2,11 +2,11 @@
 <html>
   <head>
     <meta charset="UTF-8" />
-    <title>Attestation de Scolarité</title>
+    <title>Relevé de Notes</title>
     <style>
       body {
         font-family: "Arial", sans-serif;
-        margin: 20px auto;
+        margin: 10px auto;
         position: relative;
         background-color: #ffffff;
         max-width: 800px;
@@ -37,8 +37,18 @@
         width: 200px;
         font-size: 14px;
       }
+      .courses {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      .courses th, .courses td {
+        border: 1px solid #000;
+        padding: 4px 8px;
+        text-align: left;
+      }
       .signature {
         text-align: right;
+        margin-top: 30px;
       }
       .signature p {
         font-weight: bold;
@@ -53,6 +63,7 @@
         text-align: center;
         font-size: 11px;
         color: #777;
+        position: absolute;
       }
     </style>
   </head>
@@ -65,8 +76,8 @@
       <h2>École Nationale des Sciences Appliquées Tétouan</h2>
     </div>
 
-    <h2>Attestation de Scolarité</h2>
-    <p>Le Directeur de l'ENSA Tétouan atteste que :</p>
+    <h2>Relevé de Notes</h2>
+    <p>Le Directeur de l'ENSA Tétouan certifie que :</p>
     <div class="details">
       <p>
         <strong>Nom :</strong> <span th:text="${etudiant.nom}"></span><br />
@@ -85,10 +96,22 @@
         <span th:text="${etudiant.anneeUniversitaire}"></span><br />
       </p>
     </div>
-    <p>
-      Est régulièrement inscrit(e) à l'ENSA Tétouan pour l'année universitaire
-      <span th:text="${etudiant.anneeUniversitaire}"></span>.
-    </p>
+
+    <table class="courses">
+      <thead>
+        <tr>
+          <th>Module</th>
+          <th>Note</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr th:each="note : ${etudiant.notes}">
+          <td th:text="${note.module}">Module Name</td>
+          <td th:text="${note.valeur}">Grade</td>
+        </tr>
+      </tbody>
+    </table>
+
     <p>Fait à Tétouan, le <span th:text="${date}"></span>.</p>
 
     <div class="signature">

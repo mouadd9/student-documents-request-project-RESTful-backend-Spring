@@ -1,5 +1,6 @@
 package ma.ensate.gestetudiants.service;
 
 public interface DocumentGenerationService {
-    byte[] generateDocument(Long demandeId) throws Exception;
+    byte[] generateAttestation(Long etudiantId) throws Exception;
+    byte[] generateReleveDeNotes(Long etudiantId) throws Exception;
 }

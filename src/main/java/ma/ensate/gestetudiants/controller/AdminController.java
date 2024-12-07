@@ -3,6 +3,7 @@ package ma.ensate.gestetudiants.controller;
 import ma.ensate.gestetudiants.dto.demande.DemandeResponseDTO;
 import ma.ensate.gestetudiants.dto.reclamation.ReclamationResponseDTO;
 import ma.ensate.gestetudiants.dto.statistiques.StatistiquesDTO;
+import ma.ensate.gestetudiants.enums.TypeDocument;
 import ma.ensate.gestetudiants.service.DemandeService;
 import ma.ensate.gestetudiants.service.DocumentGenerationService;
 import ma.ensate.gestetudiants.service.NotificationService;
@@ -46,15 +47,20 @@ public class AdminController {
         DemandeResponseDTO approvedDemande = demandeService.approveDemande(id);
 
         try {
-
-            byte[] pdfBytes = documentGenerationService.generateDocument(approvedDemande.getId());
+            byte[] pdfBytes;
+            if (approvedDemande.getTypeDocument() == TypeDocument.ATTESTATION_SCOLARITE) {
+                pdfBytes = documentGenerationService.generateAttestation(approvedDemande.getEtudiant().getId());
+            } else if (approvedDemande.getTypeDocument() == TypeDocument.RELEVE_NOTES) {
+                pdfBytes = documentGenerationService.generateReleveDeNotes(approvedDemande.getEtudiant().getId());
+            } else {
+                throw new IllegalArgumentException("Type de document inconnu: " + approvedDemande.getTypeDocument());
+            }
 
             notificationService.sendDemandeApprovedEmail(
                     approvedDemande.getEtudiant(),
                     approvedDemande,
                     pdfBytes);
         } catch (Exception e) {
-
             throw new RuntimeException("Erreur lors de la génération du PDF ou de l'envoi de l'e-mail", e);
         }
 

@@ -1,7 +1,7 @@
 package ma.ensate.gestetudiants.dto.etudiant;
 
 import java.util.Date;
-
+import java.util.List;
 import lombok.Data;
 
 @Data
@@ -17,4 +17,5 @@ public class EtudiantDetailedDTO {
     private String filiere;
     private String niveau;
     private String anneeUniversitaire;
+    private List<NoteDTO> notes;
 }
