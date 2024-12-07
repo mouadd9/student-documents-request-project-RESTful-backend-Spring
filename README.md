@@ -1,4 +1,3 @@
-````markdown
 # GestEtudiants - Student Management System
 
 A Spring Boot application for managing student documents and academic records at ENSA Tétouan.
@@ -123,4 +122,3 @@ The system uses JWT for authentication. Default admin credentials:
 ## License
 
 This project is licensed under the Apache License 2.0 - see the LICENSE file for details.
-``` 
