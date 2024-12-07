@@ -10,6 +10,8 @@ public interface DemandeService {
 
     List<DemandeResponseDTO> getAllDemandes();
 
+    DemandeResponseDTO getDemandeById(Long id);
+
     DemandeResponseDTO approveDemande(Long id);
 
     DemandeResponseDTO rejectDemande(Long id);

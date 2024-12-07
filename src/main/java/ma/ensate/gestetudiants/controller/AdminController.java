@@ -11,10 +11,13 @@ import ma.ensate.gestetudiants.service.ReclamationService;
 import ma.ensate.gestetudiants.service.StatistiquesService;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.MediaType;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import org.springframework.http.HttpHeaders;
 import java.util.List;
 
 @RestController
@@ -65,6 +68,35 @@ public class AdminController {
         }
 
         return ResponseEntity.ok(approvedDemande);
+    }
+
+    @GetMapping("/demandes/{id}/pdf")
+    public ResponseEntity<byte[]> getDemandePdf(@PathVariable Long id) {
+        try {
+            DemandeResponseDTO demande = demandeService.getDemandeById(id);
+            byte[] pdfBytes;
+
+            if (demande.getTypeDocument() == TypeDocument.ATTESTATION_SCOLARITE) {
+                pdfBytes = documentGenerationService.generateAttestation(demande.getEtudiant().getId());
+            } else if (demande.getTypeDocument() == TypeDocument.RELEVE_NOTES) {
+                pdfBytes = documentGenerationService.generateReleveDeNotes(demande.getEtudiant().getId());
+            } else {
+                return ResponseEntity.badRequest().body(null);
+            }
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_PDF);
+            String filename = demande.getTypeDocument() == TypeDocument.ATTESTATION_SCOLARITE
+                    ? "Attestation_Scolarite_" + demande.getEtudiant().getNom() + ".pdf"
+                    : "Releve_de_Notes_" + demande.getEtudiant().getNom() + ".pdf";
+            headers.setContentDispositionFormData("attachment", filename);
+
+            return ResponseEntity.ok()
+                    .headers(headers)
+                    .body(pdfBytes);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
     }
 
     @PutMapping("/demandes/{id}/reject")

@@ -79,4 +79,12 @@ public class DemandeServiceImpl implements DemandeService {
         return DemandeMapper.toDTO(rejectedDemande);
     }
 
+    @Override
+    public DemandeResponseDTO getDemandeById(Long id) {
+        Demande demande = demandeRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Demande not found with id " + id));
+
+        return DemandeMapper.toDTO(demande);
+    }
+
 }
