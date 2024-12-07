@@ -1,13 +1,9 @@
 package ma.ensate.gestetudiants.entity;
 
-import java.util.List;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.*;
 import lombok.Data;
+import java.util.Date;
+import java.util.List;
 
 @Entity
 @Data
@@ -20,6 +16,12 @@ public class Etudiant {
     private String email;
     private int numApogee;
     private String cin;
+    private Date dateNaissance;
+    private String lieuNaissance;
+    private String nationalite;
+    private String filiere;
+    private String niveau;
+    private String anneeUniversitaire;
 
     @OneToMany(mappedBy = "etudiant", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Demande> demandes;

@@ -8,7 +8,12 @@ import ma.ensate.gestetudiants.service.NotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
+import org.springframework.core.io.ByteArrayResource;
+
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 
 @Service
 public class NotificationServiceImpl implements NotificationService {
@@ -17,14 +22,26 @@ public class NotificationServiceImpl implements NotificationService {
     private JavaMailSender mailSender;
 
     @Override
-    public void sendDemandeApprovedEmail(EtudiantBasicDTO etudiant, DemandeResponseDTO demande) {
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(etudiant.getEmail());
-        message.setSubject("Votre demande a été approuvée");
-        message.setText("Bonjour " + etudiant.getNom() + ",\n\n" +
-                "Votre demande de (" + demande.getTypeDocument() + ") a été approuvée.\n\n" +
-                "Cordialement,\nAdministration");
-        mailSender.send(message);
+    public void sendDemandeApprovedEmail(EtudiantBasicDTO etudiant, DemandeResponseDTO demande, byte[] documentBytes) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true);
+
+            helper.setTo(etudiant.getEmail());
+            helper.setSubject("Votre demande a été approuvée");
+            helper.setText("Bonjour " + " " + etudiant.getNom() + ",\n\n" +
+                    "Votre demande de (" + demande.getTypeDocument() + ") a été approuvée.\n\n" +
+                    "Veuillez trouver votre attestation de scolarité en pièce jointe.\n\n" +
+                    "Cordialement,\nAdministration");
+
+            // Ajouter la pièce jointe
+            helper.addAttachment("Attestation_Scolarite_" + etudiant.getNom() + ".pdf",
+                    new ByteArrayResource(documentBytes));
+
+            mailSender.send(message);
+        } catch (MessagingException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override

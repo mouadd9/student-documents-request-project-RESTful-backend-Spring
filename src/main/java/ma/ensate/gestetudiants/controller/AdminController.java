@@ -4,6 +4,7 @@ import ma.ensate.gestetudiants.dto.demande.DemandeResponseDTO;
 import ma.ensate.gestetudiants.dto.reclamation.ReclamationResponseDTO;
 import ma.ensate.gestetudiants.dto.statistiques.StatistiquesDTO;
 import ma.ensate.gestetudiants.service.DemandeService;
+import ma.ensate.gestetudiants.service.DocumentGenerationService;
 import ma.ensate.gestetudiants.service.NotificationService;
 import ma.ensate.gestetudiants.service.ReclamationService;
 import ma.ensate.gestetudiants.service.StatistiquesService;
@@ -14,8 +15,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import org.springframework.web.bind.annotation.GetMapping;
-
 
 @RestController
 @RequestMapping("/api/admin")
@@ -31,6 +30,9 @@ public class AdminController {
     private NotificationService notificationService;
 
     @Autowired
+    private DocumentGenerationService documentGenerationService;
+
+    @Autowired
     private StatistiquesService statistiquesService;
 
     @GetMapping("/demandes")
@@ -42,10 +44,20 @@ public class AdminController {
     @PutMapping("/demandes/{id}/approve")
     public ResponseEntity<DemandeResponseDTO> approveDemande(@PathVariable Long id) {
         DemandeResponseDTO approvedDemande = demandeService.approveDemande(id);
-        notificationService.sendDemandeApprovedEmail(
-                approvedDemande.getEtudiant(),
-                approvedDemande
-        );
+
+        try {
+
+            byte[] pdfBytes = documentGenerationService.generateDocument(approvedDemande.getId());
+
+            notificationService.sendDemandeApprovedEmail(
+                    approvedDemande.getEtudiant(),
+                    approvedDemande,
+                    pdfBytes);
+        } catch (Exception e) {
+
+            throw new RuntimeException("Erreur lors de la génération du PDF ou de l'envoi de l'e-mail", e);
+        }
+
         return ResponseEntity.ok(approvedDemande);
     }
 
@@ -54,8 +66,7 @@ public class AdminController {
         DemandeResponseDTO rejectedDemande = demandeService.rejectDemande(id);
         notificationService.sendDemandeRejectedEmail(
                 rejectedDemande.getEtudiant(),
-                rejectedDemande
-        );
+                rejectedDemande);
         return ResponseEntity.ok(rejectedDemande);
     }
 
@@ -72,8 +83,7 @@ public class AdminController {
         ReclamationResponseDTO treatedReclamation = reclamationService.treatReclamation(id, reclamationResponseDTO);
         notificationService.sendReclamationTreatedEmail(
                 treatedReclamation.getEtudiant(),
-                treatedReclamation
-        );
+                treatedReclamation);
         return ResponseEntity.ok(treatedReclamation);
     }
 

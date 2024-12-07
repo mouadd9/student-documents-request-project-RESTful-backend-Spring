@@ -14,7 +14,7 @@ public class StatistiquesDTO {
     private Double averageDemandesProcessingTimeDays;
     private Double averageReclamationsProcessingTimeDays;
     private Double satisfactionRate;
-    
+
     // Aperçu mensuel par type de demandes
     private List<String> monthlyLabels;
     private Map<String, List<Integer>> monthlyData;
