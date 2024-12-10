@@ -1,6 +1,7 @@
 package ma.ensate.gestetudiants.enums;
 
-public enum StatutReclamation {
+public enum StatusDemande {
     EN_ATTENTE,
-    TRAITEE
+    APPROVEE,
+    REFUSEE
 }

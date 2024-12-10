@@ -1,13 +1,21 @@
 package ma.ensate.gestetudiants.entity;
 
-import jakarta.persistence.*;
-import lombok.Data;
-import ma.ensate.gestetudiants.enums.StatutDemande;
-import ma.ensate.gestetudiants.enums.TypeDocument;
-
 import java.util.Date;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import lombok.Data;
+import ma.ensate.gestetudiants.enums.StatusDemande;
+import ma.ensate.gestetudiants.enums.TypeDocument;
 
 @Entity
 @Data
@@ -20,7 +28,7 @@ public class Demande {
     private TypeDocument typeDocument;
 
     @Enumerated(EnumType.STRING)
-    private StatutDemande statut;
+    private StatusDemande status;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy HH:mm:ss")
     private Date dateCreation;

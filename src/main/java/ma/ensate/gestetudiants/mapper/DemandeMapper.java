@@ -6,25 +6,25 @@ import ma.ensate.gestetudiants.entity.Demande;
 
 public class DemandeMapper {
     
-    public static Demande toEntity(DemandeRequestDTO demandeDTO) {
+    public static Demande toEntity(final DemandeRequestDTO demandeDTO) {
         if (demandeDTO == null) {
             return null;
         }
 
-        Demande demande = new Demande();
+        final Demande demande = new Demande();
         demande.setTypeDocument(demandeDTO.getTypeDocument());
         
         return demande;
     }
-    public static DemandeResponseDTO toDTO(Demande demande) {
+    public static DemandeResponseDTO toDTO(final Demande demande) {
         if (demande == null) {
             return null;
         }
 
-        DemandeResponseDTO demandeDTO = new DemandeResponseDTO();
+        final DemandeResponseDTO demandeDTO = new DemandeResponseDTO();
         demandeDTO.setId(demande.getId());
         demandeDTO.setTypeDocument(demande.getTypeDocument());
-        demandeDTO.setStatut(demande.getStatut());
+        demandeDTO.setStatus(demande.getStatus());
         demandeDTO.setDateCreation(demande.getDateCreation());
         demandeDTO.setDateTraitement(demande.getDateTraitement());
         demandeDTO.setEtudiant(EtudiantMapper.toBasicDTO(demande.getEtudiant()));

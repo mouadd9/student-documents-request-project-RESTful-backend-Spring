@@ -1,16 +1,18 @@
 package ma.ensate.gestetudiants.repository;
 
-import ma.ensate.gestetudiants.entity.Demande;
-import ma.ensate.gestetudiants.enums.StatutDemande;
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
-import java.util.List;
+
+import ma.ensate.gestetudiants.entity.Demande;
+import ma.ensate.gestetudiants.enums.StatusDemande;
 
 @Repository
 public interface DemandeRepository extends JpaRepository<Demande, Long> {
 
-    Long countByStatut(StatutDemande statut);
+    Long countByStatus(StatusDemande status);
 
     @Query(value = "SELECT AVG(DATEDIFF(d.date_traitement, d.date_creation)) FROM demande d WHERE d.date_traitement IS NOT NULL", nativeQuery = true)
     Double calculateAverageDemandesProcessingTime();

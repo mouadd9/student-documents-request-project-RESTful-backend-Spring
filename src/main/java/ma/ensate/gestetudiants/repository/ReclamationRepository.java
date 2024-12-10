@@ -1,12 +1,13 @@
 package ma.ensate.gestetudiants.repository;
 
-import ma.ensate.gestetudiants.entity.Reclamation;
-import ma.ensate.gestetudiants.enums.StatutReclamation;
+import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
-import java.util.List;
+
+import ma.ensate.gestetudiants.entity.Reclamation;
+import ma.ensate.gestetudiants.enums.StatusReclamation;
 
 @Repository
 public interface ReclamationRepository extends JpaRepository<Reclamation, Long> {
@@ -14,7 +15,7 @@ public interface ReclamationRepository extends JpaRepository<Reclamation, Long> 
     @Query(value = "SELECT AVG(DATEDIFF(r.date_traitement, r.date_creation)) FROM reclamation r WHERE r.date_traitement IS NOT NULL", nativeQuery = true)
     Double calculateAverageReclamationsProcessingTime();
 
-    @Query("SELECT (COUNT(r) * 100.0) / (SELECT COUNT(r2) FROM Reclamation r2) FROM Reclamation r WHERE r.statut = 'TRAITEE'")
+    @Query("SELECT (COUNT(r) * 100.0) / (SELECT COUNT(r2) FROM Reclamation r2) FROM Reclamation r WHERE r.status = 'TRAITEE'")
     Double calculateSatisfactionRate();
 
     // Reclamations per day of the current week
@@ -31,5 +32,5 @@ public interface ReclamationRepository extends JpaRepository<Reclamation, Long> 
             """, nativeQuery = true)
     List<Object[]> countReclamationsPerDayOfWeek();
 
-    Long countByStatut(StatutReclamation statut);
+    Long countByStatus(StatusReclamation status);
 }
