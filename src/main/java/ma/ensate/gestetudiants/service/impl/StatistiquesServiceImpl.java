@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 
 import ma.ensate.gestetudiants.dto.statistiques.StatistiquesDTO;
 import ma.ensate.gestetudiants.enums.StatutDemande;
+import ma.ensate.gestetudiants.enums.StatutReclamation;
 import ma.ensate.gestetudiants.enums.TypeDocument;
 import ma.ensate.gestetudiants.repository.DemandeRepository;
 import ma.ensate.gestetudiants.repository.ReclamationRepository;
@@ -27,31 +28,21 @@ public class StatistiquesServiceImpl implements StatistiquesService {
         StatistiquesDTO stats = new StatistiquesDTO();
 
         // Statistiques existantes
-        Long totalRequests = demandeRepository.count();
         Long approvedRequests = demandeRepository.countByStatut(StatutDemande.APPROVEE);
         Long rejectedRequests = demandeRepository.countByStatut(StatutDemande.REFUSEE);
         Long pendingRequests = demandeRepository.countByStatut(StatutDemande.EN_ATTENTE);
+        Long pendingReclamations = reclamationRepository.countByStatut(StatutReclamation.EN_ATTENTE);
 
         stats.setApprovedDemandes(approvedRequests);
         stats.setRejectedDemandes(rejectedRequests);
         stats.setPendingDemandes(pendingRequests);
-
-        if (totalRequests > 0) {
-            stats.setApprovalRate((approvedRequests * 100.0) / totalRequests);
-            stats.setRejectionRate((rejectedRequests * 100.0) / totalRequests);
-        } else {
-            stats.setApprovalRate(0.0);
-            stats.setRejectionRate(0.0);
-        }
+        stats.setPendingReclamations(pendingReclamations);
 
         Double avgDemandesTime = demandeRepository.calculateAverageDemandesProcessingTime();
         stats.setAverageDemandesProcessingTimeDays(avgDemandesTime != null ? avgDemandesTime : 0.0);
 
         Double avgReclamationsTime = reclamationRepository.calculateAverageReclamationsProcessingTime();
         stats.setAverageReclamationsProcessingTimeDays(avgReclamationsTime != null ? avgReclamationsTime : 0.0);
-
-        Double satisfactionRate = reclamationRepository.calculateSatisfactionRate();
-        stats.setSatisfactionRate(satisfactionRate != null ? satisfactionRate : 0.0);
 
         // Aperçu mensuel avec abréviations
         List<Object[]> monthlyCounts = demandeRepository.countDemandesPerMonthAndType();

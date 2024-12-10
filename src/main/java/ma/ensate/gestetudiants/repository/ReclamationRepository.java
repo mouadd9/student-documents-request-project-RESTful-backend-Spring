@@ -1,6 +1,8 @@
 package ma.ensate.gestetudiants.repository;
 
 import ma.ensate.gestetudiants.entity.Reclamation;
+import ma.ensate.gestetudiants.enums.StatutReclamation;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -28,4 +30,6 @@ public interface ReclamationRepository extends JpaRepository<Reclamation, Long> 
             ORDER BY dayOfWeek
             """, nativeQuery = true)
     List<Object[]> countReclamationsPerDayOfWeek();
+
+    Long countByStatut(StatutReclamation statut);
 }

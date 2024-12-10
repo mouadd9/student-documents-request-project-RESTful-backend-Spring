@@ -9,11 +9,10 @@ public class StatistiquesDTO {
     private Long approvedDemandes;
     private Long rejectedDemandes;
     private Long pendingDemandes;
-    private Double approvalRate;
-    private Double rejectionRate;
+    private Long pendingReclamations;
+
     private Double averageDemandesProcessingTimeDays;
     private Double averageReclamationsProcessingTimeDays;
-    private Double satisfactionRate;
 
     // Aperçu mensuel par type de demandes
     private List<String> monthlyLabels;
