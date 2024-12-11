@@ -41,8 +41,8 @@ public class AuthController {
         // If authentication is successful, generate JWT
         UserDetails userDetails = userDetailsService.loadUserByUsername(loginRequest.getUsername());
         String role = userDetails.getAuthorities().iterator().next().getAuthority().replace("ROLE_", "");
-        String jwt = jwtUtil.generateToken(userDetails.getUsername(), role);
+        String access_token = jwtUtil.generateToken(userDetails.getUsername(), role);
 
-        return new LoginResponseDTO(jwt);
+        return new LoginResponseDTO(access_token);
     }
 }
