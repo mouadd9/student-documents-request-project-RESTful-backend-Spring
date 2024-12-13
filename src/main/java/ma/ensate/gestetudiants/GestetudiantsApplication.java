@@ -6,8 +6,10 @@ import ma.ensate.gestetudiants.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.*;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+@EnableAsync
 @SpringBootApplication
 public class GestetudiantsApplication implements CommandLineRunner {
 

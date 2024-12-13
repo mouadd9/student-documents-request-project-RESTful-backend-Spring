@@ -5,15 +5,19 @@ import ma.ensate.gestetudiants.exception.ResourceNotFoundException;
 import ma.ensate.gestetudiants.repository.EtudiantRepository;
 import ma.ensate.gestetudiants.service.DocumentGenerationService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.spring6.SpringTemplateEngine;
 import org.xhtmlrenderer.pdf.ITextRenderer;
 
+import jakarta.transaction.Transactional;
+
 import java.io.ByteArrayOutputStream;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 public class DocumentGenerationServiceImpl implements DocumentGenerationService {
@@ -24,30 +28,43 @@ public class DocumentGenerationServiceImpl implements DocumentGenerationService 
     @Autowired
     private SpringTemplateEngine templateEngine;
 
+    @Async
     @Override
-    public byte[] generateAttestation(Long etudiantId) throws Exception {
-        Etudiant etudiant = etudiantRepository.findById(etudiantId)
-                .orElseThrow(() -> new ResourceNotFoundException("Étudiant non trouvé avec l'id " + etudiantId));
+    public CompletableFuture<byte[]> generateAttestation(Long etudiantId) {
+        try {
+            Etudiant etudiant = etudiantRepository.findById(etudiantId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Étudiant non trouvé avec l'id " + etudiantId));
 
-        Context context = new Context();
-        context.setVariable("etudiant", etudiant);
-        context.setVariable("date", new SimpleDateFormat("dd/MM/yyyy").format(new Date()));
+            Context context = new Context();
+            context.setVariable("etudiant", etudiant);
+            context.setVariable("date", new SimpleDateFormat("dd/MM/yyyy").format(new Date()));
 
-        String htmlContent = templateEngine.process("attestation", context);
-        return convertHtmlToPdf(htmlContent);
+            String htmlContent = templateEngine.process("attestation", context);
+            byte[] pdf = convertHtmlToPdf(htmlContent);
+            return CompletableFuture.completedFuture(pdf);
+        } catch (Exception e) {
+            return CompletableFuture.failedFuture(e);
+        }
     }
 
+    @Async
+    @Transactional
     @Override
-    public byte[] generateReleveDeNotes(Long etudiantId) throws Exception {
-        Etudiant etudiant = etudiantRepository.findById(etudiantId)
-                .orElseThrow(() -> new ResourceNotFoundException("Étudiant non trouvé avec l'id " + etudiantId));
+    public CompletableFuture<byte[]> generateReleveDeNotes(Long etudiantId) {
+        try {
+            Etudiant etudiant = etudiantRepository.findByIdWithNotes(etudiantId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Étudiant non trouvé avec l'id " + etudiantId));
 
-        Context context = new Context();
-        context.setVariable("etudiant", etudiant);
-        context.setVariable("date", new SimpleDateFormat("dd/MM/yyyy").format(new Date()));
+            Context context = new Context();
+            context.setVariable("etudiant", etudiant);
+            context.setVariable("date", new SimpleDateFormat("dd/MM/yyyy").format(new Date()));
 
-        String htmlContent = templateEngine.process("releve_de_notes", context);
-        return convertHtmlToPdf(htmlContent);
+            String htmlContent = templateEngine.process("releve_de_notes", context);
+            byte[] pdf = convertHtmlToPdf(htmlContent);
+            return CompletableFuture.completedFuture(pdf);
+        } catch (Exception e) {
+            return CompletableFuture.failedFuture(e);
+        }
     }
 
     private byte[] convertHtmlToPdf(String htmlContent) throws Exception {

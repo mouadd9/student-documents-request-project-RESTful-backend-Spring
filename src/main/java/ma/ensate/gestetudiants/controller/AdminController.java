@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 
 import org.springframework.http.HttpHeaders;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @RestController
 @RequestMapping("/api/admin")
@@ -49,23 +50,28 @@ public class AdminController {
     public ResponseEntity<DemandeResponseDTO> approveDemande(@PathVariable Long id) {
         DemandeResponseDTO approvedDemande = demandeService.approveDemande(id);
 
-        try {
-            byte[] pdfBytes;
-            if (approvedDemande.getTypeDocument() == TypeDocument.ATTESTATION_SCOLARITE) {
-                pdfBytes = documentGenerationService.generateAttestation(approvedDemande.getEtudiant().getId());
-            } else if (approvedDemande.getTypeDocument() == TypeDocument.RELEVE_NOTES) {
-                pdfBytes = documentGenerationService.generateReleveDeNotes(approvedDemande.getEtudiant().getId());
-            } else {
-                throw new IllegalArgumentException("Type de document inconnu: " + approvedDemande.getTypeDocument());
-            }
+        // Asynchronously generate PDF and send email
+        CompletableFuture<byte[]> pdfFuture;
 
+        if (approvedDemande.getTypeDocument() == TypeDocument.ATTESTATION_SCOLARITE) {
+            pdfFuture = documentGenerationService.generateAttestation(approvedDemande.getEtudiant().getId());
+        } else if (approvedDemande.getTypeDocument() == TypeDocument.RELEVE_NOTES) {
+            pdfFuture = documentGenerationService.generateReleveDeNotes(approvedDemande.getEtudiant().getId());
+        } else {
+            throw new IllegalArgumentException("Type de document inconnu: " + approvedDemande.getTypeDocument());
+        }
+
+        pdfFuture.thenAccept(pdfBytes -> {
             notificationService.sendDemandeApprovedEmail(
                     approvedDemande.getEtudiant(),
                     approvedDemande,
-                    pdfBytes);
-        } catch (Exception e) {
-            throw new RuntimeException("Erreur lors de la génération du PDF ou de l'envoi de l'e-mail", e);
-        }
+                    pdfBytes
+            );
+        }).exceptionally(ex -> {
+            // Log the exception or handle it accordingly
+            ex.printStackTrace();
+            return null;
+        });
 
         return ResponseEntity.ok(approvedDemande);
     }
@@ -74,15 +80,17 @@ public class AdminController {
     public ResponseEntity<byte[]> getDemandePdf(@PathVariable Long id) {
         try {
             DemandeResponseDTO demande = demandeService.getDemandeById(id);
-            byte[] pdfBytes;
+            CompletableFuture<byte[]> pdfFuture;
 
             if (demande.getTypeDocument() == TypeDocument.ATTESTATION_SCOLARITE) {
-                pdfBytes = documentGenerationService.generateAttestation(demande.getEtudiant().getId());
+                pdfFuture = documentGenerationService.generateAttestation(demande.getEtudiant().getId());
             } else if (demande.getTypeDocument() == TypeDocument.RELEVE_NOTES) {
-                pdfBytes = documentGenerationService.generateReleveDeNotes(demande.getEtudiant().getId());
+                pdfFuture = documentGenerationService.generateReleveDeNotes(demande.getEtudiant().getId());
             } else {
                 return ResponseEntity.badRequest().body(null);
             }
+
+            byte[] pdfBytes = pdfFuture.get(); // This will block until the PDF is generated
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_PDF);
@@ -102,9 +110,17 @@ public class AdminController {
     @PutMapping("/demandes/{id}/reject")
     public ResponseEntity<DemandeResponseDTO> rejectDemande(@PathVariable Long id) {
         DemandeResponseDTO rejectedDemande = demandeService.rejectDemande(id);
+
+        // Asynchronously send rejection email
         notificationService.sendDemandeRejectedEmail(
                 rejectedDemande.getEtudiant(),
-                rejectedDemande);
+                rejectedDemande
+        ).exceptionally(ex -> {
+            // Log the exception or handle it accordingly
+            ex.printStackTrace();
+            return null;
+        });
+
         return ResponseEntity.ok(rejectedDemande);
     }
 
@@ -119,9 +135,17 @@ public class AdminController {
             @PathVariable Long id,
             @Validated @RequestBody ReclamationResponseDTO reclamationResponseDTO) {
         ReclamationResponseDTO treatedReclamation = reclamationService.treatReclamation(id, reclamationResponseDTO);
+
+        // Asynchronously send treated reclamation email
         notificationService.sendReclamationTreatedEmail(
                 treatedReclamation.getEtudiant(),
-                treatedReclamation);
+                treatedReclamation
+        ).exceptionally(ex -> {
+            // Log the exception or handle it accordingly
+            ex.printStackTrace();
+            return null;
+        });
+
         return ResponseEntity.ok(treatedReclamation);
     }
 

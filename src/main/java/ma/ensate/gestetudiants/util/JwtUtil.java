@@ -30,11 +30,6 @@ public class JwtUtil {
         return extractClaims(token).getSubject();
     }
 
-    // Extraire le rôle du token
-    public String extractRole(String token) {
-        return (String) extractClaims(token).get("role");
-    }
-
     // Valider le token
     public boolean validateToken(String token, String username) {
         String extractedUsername = extractUsername(token);
