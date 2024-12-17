@@ -8,8 +8,6 @@ services:
       MYSQL_DATABASE: gest_etu_db
     ports:
       - "3307:3306"
-    volumes:
-      - ./data/mysql:/var/lib/mysql
     networks:
       - app-network
 

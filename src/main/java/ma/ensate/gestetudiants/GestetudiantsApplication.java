@@ -34,4 +34,5 @@ public class GestetudiantsApplication implements CommandLineRunner {
             System.out.println("Admin user created with username 'admin' and password 'admin'");
         }
     }
+
 }

@@ -11,4 +11,6 @@ public interface ReclamationService {
     List<ReclamationResponseDTO> getAllReclamations();
 
     ReclamationResponseDTO treatReclamation(Long id, ReclamationResponseDTO reclamationDTO);
+
+    ReclamationResponseDTO getReclamationById(Long id);
 }

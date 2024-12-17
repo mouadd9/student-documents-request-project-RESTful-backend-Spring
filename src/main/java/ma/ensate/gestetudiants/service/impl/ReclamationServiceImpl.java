@@ -7,28 +7,40 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import ma.ensate.gestetudiants.dto.reclamation.ReclamationRequestDTO;
 import ma.ensate.gestetudiants.dto.reclamation.ReclamationResponseDTO;
 import ma.ensate.gestetudiants.entity.Etudiant;
 import ma.ensate.gestetudiants.entity.Reclamation;
 import ma.ensate.gestetudiants.enums.StatusReclamation;
+import ma.ensate.gestetudiants.exception.EntityDuplicateException;
 import ma.ensate.gestetudiants.exception.ResourceNotFoundException;
 import ma.ensate.gestetudiants.mapper.ReclamationMapper;
 import ma.ensate.gestetudiants.repository.EtudiantRepository;
 import ma.ensate.gestetudiants.repository.ReclamationRepository;
+import ma.ensate.gestetudiants.service.NotificationService;
 import ma.ensate.gestetudiants.service.ReclamationService;
 
 @Service
 public class ReclamationServiceImpl implements ReclamationService {
 
+    private static final Logger logger = LoggerFactory.getLogger(DemandeServiceImpl.class);
+
     @Autowired
     private ReclamationRepository reclamationRepository;
+
+    @Autowired
+    private NotificationService notificationService;
 
     @Autowired
     private EtudiantRepository etudiantRepository;
 
     @Override
     public ReclamationResponseDTO createReclamation(final ReclamationRequestDTO reclamationDTO) {
+
+        // Recherche de l'étudiant
         final Etudiant etudiant = etudiantRepository.findByEmailAndNumApogeeAndCin(
                 reclamationDTO.getEmail(),
                 reclamationDTO.getNumApogee(),
@@ -38,12 +50,20 @@ public class ReclamationServiceImpl implements ReclamationService {
             throw new ResourceNotFoundException("Étudiant non trouvé avec les informations fournies.");
         }
 
+        // Vérification d'une réclamation en attente existante
+        if (reclamationRepository.existsByEtudiantAndStatus(etudiant, StatusReclamation.EN_ATTENTE)) {
+            throw new EntityDuplicateException("Une réclamation en attente existe déjà pour cet étudiant.");
+        }
+
+        // Création de la réclamation
         final Reclamation reclamation = ReclamationMapper.toEntity(reclamationDTO);
         reclamation.setStatus(StatusReclamation.EN_ATTENTE);
         reclamation.setDateCreation(new Date());
         reclamation.setEtudiant(etudiant);
 
         final Reclamation savedReclamation = reclamationRepository.save(reclamation);
+        logger.info("Reclamation created successfully with ID: {}", savedReclamation.getId());
+
         return ReclamationMapper.toDTO(savedReclamation);
     }
 
@@ -57,14 +77,30 @@ public class ReclamationServiceImpl implements ReclamationService {
 
     @Override
     public ReclamationResponseDTO treatReclamation(final Long id, final ReclamationResponseDTO reclamationDTO) {
-        final Reclamation reclamation = reclamationRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Reclamation not found with id " + id));
 
+        // Recherche de la réclamation
+        final Reclamation reclamation = reclamationRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Réclamation non trouvée avec l'id " + id));
+
+        // Traitement de la réclamation
         reclamation.setReponse(reclamationDTO.getReponse());
-        reclamation.setStatus(StatusReclamation.TRAITEE);
         reclamation.setDateTraitement(new Date());
 
-        final Reclamation treatedReclamation = reclamationRepository.save(reclamation);
-        return ReclamationMapper.toDTO(treatedReclamation);
+        notificationService.sendReclamationTreatedEmail(reclamation);
+
+        reclamation.setStatus(StatusReclamation.TRAITEE);
+        reclamationRepository.save(reclamation);
+
+        logger.info("Reclamation with ID: {} processed successfully.", id);
+
+        return ReclamationMapper.toDTO(reclamation);
+
+    }
+
+    @Override
+    public ReclamationResponseDTO getReclamationById(Long id) {
+        return reclamationRepository.findById(id)
+                .map(ReclamationMapper::toDTO)
+                .orElseThrow(() -> new ResourceNotFoundException("Réclamation non trouvée avec l'id " + id));
     }
 }

@@ -1,15 +1,21 @@
 package ma.ensate.gestetudiants.service.impl;
 
 import ma.ensate.gestetudiants.entity.Etudiant;
+import ma.ensate.gestetudiants.enums.TypeDocument;
+import ma.ensate.gestetudiants.exception.DocumentGenerationException;
 import ma.ensate.gestetudiants.exception.ResourceNotFoundException;
 import ma.ensate.gestetudiants.repository.EtudiantRepository;
 import ma.ensate.gestetudiants.service.DocumentGenerationService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.spring6.SpringTemplateEngine;
 import org.xhtmlrenderer.pdf.ITextRenderer;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import jakarta.transaction.Transactional;
 
@@ -22,28 +28,37 @@ import java.util.concurrent.CompletableFuture;
 @Service
 public class DocumentGenerationServiceImpl implements DocumentGenerationService {
 
+    private static final Logger logger = LoggerFactory.getLogger(DocumentGenerationServiceImpl.class);
+
     @Autowired
     private EtudiantRepository etudiantRepository;
 
     @Autowired
     private SpringTemplateEngine templateEngine;
 
+    @Override
+    public CompletableFuture<byte[]> generateDocument(TypeDocument type, Long etudiantId) {
+        return switch (type) {
+            case ATTESTATION_SCOLARITE -> generateAttestation(etudiantId);
+            case RELEVE_NOTES -> generateReleveDeNotes(etudiantId);
+            default -> throw new DocumentGenerationException("Type de document non reconnu: " + type);
+        };
+    }
+
     @Async
     @Override
     public CompletableFuture<byte[]> generateAttestation(Long etudiantId) {
+        Etudiant etudiant = etudiantRepository.findById(etudiantId)
+                .orElseThrow(() -> new ResourceNotFoundException("Étudiant non trouvé avec l'id " + etudiantId));
+
         try {
-            Etudiant etudiant = etudiantRepository.findById(etudiantId)
-                    .orElseThrow(() -> new ResourceNotFoundException("Étudiant non trouvé avec l'id " + etudiantId));
-
-            Context context = new Context();
-            context.setVariable("etudiant", etudiant);
-            context.setVariable("date", new SimpleDateFormat("dd/MM/yyyy").format(new Date()));
-
+            Context context = createContext(etudiant);
             String htmlContent = templateEngine.process("attestation", context);
             byte[] pdf = convertHtmlToPdf(htmlContent);
             return CompletableFuture.completedFuture(pdf);
         } catch (Exception e) {
-            return CompletableFuture.failedFuture(e);
+            logger.error("Error generating attestation PDF for Etudiant ID {}: {}", etudiantId, e.getMessage());
+            throw new DocumentGenerationException("Erreur lors de la génération du attestation PDF.", e);
         }
     }
 
@@ -51,27 +66,31 @@ public class DocumentGenerationServiceImpl implements DocumentGenerationService 
     @Transactional
     @Override
     public CompletableFuture<byte[]> generateReleveDeNotes(Long etudiantId) {
+        Etudiant etudiant = etudiantRepository.findByIdWithNotes(etudiantId)
+                .orElseThrow(() -> new ResourceNotFoundException("Étudiant non trouvé avec l'id " + etudiantId));
+
         try {
-            Etudiant etudiant = etudiantRepository.findByIdWithNotes(etudiantId)
-                    .orElseThrow(() -> new ResourceNotFoundException("Étudiant non trouvé avec l'id " + etudiantId));
-
-            Context context = new Context();
-            context.setVariable("etudiant", etudiant);
-            context.setVariable("date", new SimpleDateFormat("dd/MM/yyyy").format(new Date()));
-
+            Context context = createContext(etudiant);
             String htmlContent = templateEngine.process("releve_de_notes", context);
             byte[] pdf = convertHtmlToPdf(htmlContent);
             return CompletableFuture.completedFuture(pdf);
         } catch (Exception e) {
-            return CompletableFuture.failedFuture(e);
+            logger.error("Error generating relevé de notes PDF for Etudiant ID {}: {}", etudiantId, e.getMessage());
+            throw new DocumentGenerationException("Erreur lors de la génération du relevé de notes PDF.", e);
         }
     }
 
-    private byte[] convertHtmlToPdf(String htmlContent) throws Exception {
+    private Context createContext(Etudiant etudiant) {
+        Context context = new Context();
+        context.setVariable("etudiant", etudiant);
+        context.setVariable("date", new SimpleDateFormat("dd/MM/yyyy").format(new Date()));
+        return context;
+    }
+
+    private byte[] convertHtmlToPdf(String htmlContent) {
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
             ITextRenderer renderer = new ITextRenderer();
 
-            // Dynamically set the base URL to locate resources in the static/ directory
             URL resource = getClass().getClassLoader().getResource("static/");
             String baseUrl = resource != null ? resource.toString() : "";
             renderer.setDocumentFromString(htmlContent, baseUrl);
@@ -79,6 +98,9 @@ public class DocumentGenerationServiceImpl implements DocumentGenerationService 
             renderer.layout();
             renderer.createPDF(outputStream);
             return outputStream.toByteArray();
+        } catch (Exception e) {
+            logger.error("Error converting HTML to PDF: {}", e.getMessage());
+            throw new DocumentGenerationException("Erreur lors de la conversion HTML vers PDF", e);
         }
     }
 }

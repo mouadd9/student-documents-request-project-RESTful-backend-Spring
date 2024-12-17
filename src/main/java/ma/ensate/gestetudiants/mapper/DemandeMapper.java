@@ -28,6 +28,7 @@ public class DemandeMapper {
         demandeDTO.setDateCreation(demande.getDateCreation());
         demandeDTO.setDateTraitement(demande.getDateTraitement());
         demandeDTO.setEtudiant(EtudiantMapper.toBasicDTO(demande.getEtudiant()));
+        demandeDTO.setAsyncErrorMessage(demande.getAsyncErrorMessage());
         
         return demandeDTO;
     }

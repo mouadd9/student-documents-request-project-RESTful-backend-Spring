@@ -35,7 +35,7 @@ public class AuthController {
                     )
             );
         } catch (BadCredentialsException e) {
-            throw new RuntimeException("Incorrect username or password", e);
+            throw new RuntimeException("username et password incorrect", e);
         }
 
         // If authentication is successful, generate JWT

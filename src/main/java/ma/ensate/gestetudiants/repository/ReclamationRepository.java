@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import ma.ensate.gestetudiants.entity.Etudiant;
 import ma.ensate.gestetudiants.entity.Reclamation;
 import ma.ensate.gestetudiants.enums.StatusReclamation;
 
@@ -33,4 +34,6 @@ public interface ReclamationRepository extends JpaRepository<Reclamation, Long> 
     List<Object[]> countReclamationsPerDayOfWeek();
 
     Long countByStatus(StatusReclamation status);
+
+    boolean existsByEtudiantAndStatus(Etudiant etudiant, StatusReclamation enAttente);
 }

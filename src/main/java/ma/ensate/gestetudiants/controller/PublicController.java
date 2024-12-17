@@ -6,21 +6,21 @@ import ma.ensate.gestetudiants.dto.reclamation.ReclamationRequestDTO;
 import ma.ensate.gestetudiants.dto.reclamation.ReclamationResponseDTO;
 import ma.ensate.gestetudiants.service.DemandeService;
 import ma.ensate.gestetudiants.service.ReclamationService;
-import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import lombok.RequiredArgsConstructor;
+
 @RestController
 @RequestMapping("/api/public")
+@RequiredArgsConstructor
 public class PublicController {
 
-    @Autowired
-    DemandeService demandeService;
-
-    @Autowired
-    ReclamationService reclamationService;
+    private final DemandeService demandeService;
+    private final ReclamationService reclamationService;
 
     @PostMapping("/demandes")
     public ResponseEntity<DemandeResponseDTO> createDemande(@Validated @RequestBody DemandeRequestDTO demandeDTO) {

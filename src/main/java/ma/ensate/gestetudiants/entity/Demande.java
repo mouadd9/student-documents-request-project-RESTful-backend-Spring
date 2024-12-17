@@ -4,6 +4,7 @@ import java.util.Date;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -39,4 +40,8 @@ public class Demande {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "etudiant_id", nullable = false)
     private Etudiant etudiant;
+
+    // if asynchronous processing fails, the error message will be stored here
+    @Column(length = 500)
+    private String asyncErrorMessage;
 }

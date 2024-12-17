@@ -7,7 +7,9 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import ma.ensate.gestetudiants.entity.Demande;
+import ma.ensate.gestetudiants.entity.Etudiant;
 import ma.ensate.gestetudiants.enums.StatusDemande;
+import ma.ensate.gestetudiants.enums.TypeDocument;
 
 @Repository
 public interface DemandeRepository extends JpaRepository<Demande, Long> {
@@ -34,4 +36,6 @@ public interface DemandeRepository extends JpaRepository<Demande, Long> {
             ORDER BY dayOfWeek
             """, nativeQuery = true)
     List<Object[]> countDemandesPerDayOfWeek();
+
+    boolean existsByEtudiantAndStatusAndTypeDocument(Etudiant etudiant, StatusDemande enAttente, TypeDocument typeDocument);
 }
