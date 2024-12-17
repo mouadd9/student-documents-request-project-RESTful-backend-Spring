@@ -16,6 +16,8 @@ import org.xhtmlrenderer.pdf.ITextRenderer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import jakarta.transaction.Transactional;
+
 import java.io.ByteArrayOutputStream;
 import java.net.URL;
 import java.text.SimpleDateFormat;
@@ -34,7 +36,7 @@ public class DocumentGenerationServiceImpl implements DocumentGenerationService 
     private SpringTemplateEngine templateEngine;
 
     @Override
-    public byte[] generateDocument(TypeDocument type, Long etudiantId) {
+    public CompletableFuture<byte[]> generateDocument(TypeDocument type, Long etudiantId) {
         return switch (type) {
             case ATTESTATION_SCOLARITE -> generateAttestation(etudiantId);
             case RELEVE_NOTES -> generateReleveDeNotes(etudiantId);
@@ -42,8 +44,9 @@ public class DocumentGenerationServiceImpl implements DocumentGenerationService 
         };
     }
 
+    @Async
     @Override
-    public byte[] generateAttestation(Long etudiantId) {
+    public CompletableFuture<byte[]> generateAttestation(Long etudiantId) {
         Etudiant etudiant = etudiantRepository.findById(etudiantId)
                 .orElseThrow(() -> new ResourceNotFoundException("Étudiant non trouvé avec l'id " + etudiantId));
 
@@ -59,7 +62,7 @@ public class DocumentGenerationServiceImpl implements DocumentGenerationService 
     }
 
     @Override
-    public byte[] generateReleveDeNotes(Long etudiantId) {
+    public CompletableFuture<byte[]> generateReleveDeNotes(Long etudiantId) {
         Etudiant etudiant = etudiantRepository.findByIdWithNotes(etudiantId)
                 .orElseThrow(() -> new ResourceNotFoundException("Étudiant non trouvé avec l'id " + etudiantId));
 

@@ -92,7 +92,7 @@ public class AdminController {
     public ResponseEntity<byte[]> getDemandePdf(@PathVariable Long id) throws ExecutionException, InterruptedException {
         DemandeResponseDTO demande = demandeService.getDemandeById(id);
         byte[] pdfBytes = documentGenerationService
-                .generateDocument(demande.getTypeDocument(), demande.getEtudiant().getId());
+                .generateDocument(demande.getTypeDocument(), demande.getEtudiant().getId()).get();
         return ResponseEntity.ok()
                 .headers(createPdfHeaders(demande))
                 .body(pdfBytes);

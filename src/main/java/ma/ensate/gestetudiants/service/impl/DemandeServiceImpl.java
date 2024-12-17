@@ -85,27 +85,36 @@ public class DemandeServiceImpl implements DemandeService {
         final Demande demande = demandeRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Demande non trouvée avec l'ID: " + id));
 
+        demande.setStatus(StatusDemande.EN_COURS);
+        demande.setDateTraitement(new Date());
+        demandeRepository.save(demande);
         logger.info("Demande with ID: {} updated to EN_COURS.", id);
 
-        try {
-            byte[] pdfBytes = documentGenerationService.generateDocument(demande.getTypeDocument(),
-                    demande.getEtudiant().getId());
-            notificationService.sendDemandeApprovedEmail(demande, pdfBytes).get();
-            demande.setStatus(StatusDemande.APPROVEE);
-            demande.setDateTraitement(new Date());
-            demande.setAsyncErrorMessage(null);
-            demandeRepository.save(demande);
-            logger.info("Demande with ID: {} approved successfully.", demande.getId());
-        } catch (Exception e) {
-            String errorMessage = e.getMessage();
-            logger.error("Error processing approval for Demande ID {}: {}", demande.getId(), errorMessage);
-            demande.setStatus(StatusDemande.EN_ATTENTE);
-            demande.setAsyncErrorMessage(errorMessage);
-            demandeRepository.save(demande);
-            logger.info("Demande with ID: {} reverted to EN_ATTENTE due to error.", demande.getId());
-        }
+        // Process approval asynchronously
+        processApprovalAsync(demande);
 
         return DemandeMapper.toDTO(demande);
+    }
+
+    @Async
+    public void processApprovalAsync(Demande demande) {
+        documentGenerationService.generateDocument(demande.getTypeDocument(), demande.getEtudiant().getId())
+                .thenCompose(pdfBytes -> notificationService.sendDemandeApprovedEmail(demande, pdfBytes))
+                .thenAccept(aVoid -> {
+                    demande.setStatus(StatusDemande.APPROVEE);
+                    demande.setAsyncErrorMessage(null);
+                    demandeRepository.save(demande);
+                    logger.info("Demande with ID: {} approved successfully.", demande.getId());
+                })
+                .exceptionally(e -> {
+                    String errorMessage = e.getCause() != null ? e.getCause().getMessage() : e.getMessage();
+                    logger.error("Error processing approval for Demande ID {}: {}", demande.getId(), errorMessage);
+                    demande.setStatus(StatusDemande.EN_ATTENTE);
+                    demande.setAsyncErrorMessage(errorMessage);
+                    demandeRepository.save(demande);
+                    logger.info("Demande with ID: {} reverted to EN_ATTENTE due to error.", demande.getId());
+                    return null;
+                });
     }
 
     @Override
@@ -118,23 +127,31 @@ public class DemandeServiceImpl implements DemandeService {
         demandeRepository.save(demande);
         logger.info("Demande with ID: {} updated to EN_COURS.", id);
 
-        try {
-            notificationService.sendDemandeRejectedEmail(demande).get();
-            demande.setStatus(StatusDemande.REFUSEE);
-            demande.setDateTraitement(new Date());
-            demande.setAsyncErrorMessage(null);
-            demandeRepository.save(demande);
-            logger.info("Demande with ID: {} rejected successfully.", demande.getId());
-        } catch (Exception e) {
-            String errorMessage = e.getCause() != null ? e.getCause().getMessage() : e.getMessage();
-            logger.error("Error processing rejection for Demande ID {}: {}", demande.getId(), errorMessage);
-            demande.setStatus(StatusDemande.EN_ATTENTE);
-            demande.setAsyncErrorMessage(errorMessage);
-            demandeRepository.save(demande);
-            logger.info("Demande with ID: {} returned to EN_ATTENTE.", demande.getId());
-        }
+        // Process rejection asynchronously
+        processRejectionAsync(demande);
 
         return DemandeMapper.toDTO(demande);
+    }
+
+    @Async
+    public CompletableFuture<Void> processRejectionAsync(Demande demande) {
+        return notificationService.sendDemandeRejectedEmail(demande)
+                .thenAccept(aVoid -> {
+                    demande.setStatus(StatusDemande.REFUSEE);
+                    demande.setAsyncErrorMessage(null); // Effacer les erreurs précédentes
+                    demandeRepository.save(demande);
+                    logger.info("Demande with ID: {} rejected successfully.", demande.getId());
+                })
+                .exceptionally(e -> {
+                    String errorMessage = e.getCause() != null ? e.getCause().getMessage() : e.getMessage();
+                    logger.error("Error during asynchronous processing of request ID {}: {}", demande.getId(),
+                            errorMessage);
+                    demande.setStatus(StatusDemande.EN_ATTENTE);
+                    demande.setAsyncErrorMessage(errorMessage); // Stocker le message d'erreur
+                    demandeRepository.save(demande);
+                    logger.info("Demande with ID: {} returned to EN_ATTENTE.", demande.getId());
+                    return null;
+                });
     }
 
     @Override
