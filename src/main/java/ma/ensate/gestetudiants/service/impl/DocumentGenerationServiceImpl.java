@@ -8,7 +8,6 @@ import ma.ensate.gestetudiants.repository.EtudiantRepository;
 import ma.ensate.gestetudiants.service.DocumentGenerationService;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.spring6.SpringTemplateEngine;
@@ -17,13 +16,11 @@ import org.xhtmlrenderer.pdf.ITextRenderer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import jakarta.transaction.Transactional;
-
 import java.io.ByteArrayOutputStream;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.concurrent.CompletableFuture;
+
 
 @Service
 public class DocumentGenerationServiceImpl implements DocumentGenerationService {
@@ -37,7 +34,7 @@ public class DocumentGenerationServiceImpl implements DocumentGenerationService 
     private SpringTemplateEngine templateEngine;
 
     @Override
-    public CompletableFuture<byte[]> generateDocument(TypeDocument type, Long etudiantId) {
+    public byte[] generateDocument(TypeDocument type, Long etudiantId) {
         return switch (type) {
             case ATTESTATION_SCOLARITE -> generateAttestation(etudiantId);
             case RELEVE_NOTES -> generateReleveDeNotes(etudiantId);
@@ -45,9 +42,8 @@ public class DocumentGenerationServiceImpl implements DocumentGenerationService 
         };
     }
 
-    @Async
     @Override
-    public CompletableFuture<byte[]> generateAttestation(Long etudiantId) {
+    public byte[] generateAttestation(Long etudiantId) {
         Etudiant etudiant = etudiantRepository.findById(etudiantId)
                 .orElseThrow(() -> new ResourceNotFoundException("Étudiant non trouvé avec l'id " + etudiantId));
 
@@ -55,17 +51,15 @@ public class DocumentGenerationServiceImpl implements DocumentGenerationService 
             Context context = createContext(etudiant);
             String htmlContent = templateEngine.process("attestation", context);
             byte[] pdf = convertHtmlToPdf(htmlContent);
-            return CompletableFuture.completedFuture(pdf);
+            return pdf;
         } catch (Exception e) {
             logger.error("Error generating attestation PDF for Etudiant ID {}: {}", etudiantId, e.getMessage());
             throw new DocumentGenerationException("Erreur lors de la génération du attestation PDF.", e);
         }
     }
 
-    @Async
-    @Transactional
     @Override
-    public CompletableFuture<byte[]> generateReleveDeNotes(Long etudiantId) {
+    public byte[] generateReleveDeNotes(Long etudiantId) {
         Etudiant etudiant = etudiantRepository.findByIdWithNotes(etudiantId)
                 .orElseThrow(() -> new ResourceNotFoundException("Étudiant non trouvé avec l'id " + etudiantId));
 
@@ -73,7 +67,7 @@ public class DocumentGenerationServiceImpl implements DocumentGenerationService 
             Context context = createContext(etudiant);
             String htmlContent = templateEngine.process("releve_de_notes", context);
             byte[] pdf = convertHtmlToPdf(htmlContent);
-            return CompletableFuture.completedFuture(pdf);
+            return pdf;
         } catch (Exception e) {
             logger.error("Error generating relevé de notes PDF for Etudiant ID {}: {}", etudiantId, e.getMessage());
             throw new DocumentGenerationException("Erreur lors de la génération du relevé de notes PDF.", e);
