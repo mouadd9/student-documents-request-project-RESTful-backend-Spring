@@ -15,7 +15,6 @@ import ma.ensate.gestetudiants.dto.reclamation.ReclamationResponseDTO;
 import ma.ensate.gestetudiants.entity.Etudiant;
 import ma.ensate.gestetudiants.entity.Reclamation;
 import ma.ensate.gestetudiants.enums.StatusReclamation;
-import ma.ensate.gestetudiants.exception.EntityDuplicateException;
 import ma.ensate.gestetudiants.exception.ResourceNotFoundException;
 import ma.ensate.gestetudiants.mapper.ReclamationMapper;
 import ma.ensate.gestetudiants.repository.EtudiantRepository;
@@ -50,11 +49,7 @@ public class ReclamationServiceImpl implements ReclamationService {
             throw new ResourceNotFoundException("Étudiant non trouvé avec les informations fournies.");
         }
 
-        // Vérification d'une réclamation en attente existante
-        if (reclamationRepository.existsByEtudiantAndStatus(etudiant, StatusReclamation.EN_ATTENTE)) {
-            throw new EntityDuplicateException("Une réclamation en attente existe déjà pour cet étudiant.");
-        }
-
+        
         // Création de la réclamation
         final Reclamation reclamation = ReclamationMapper.toEntity(reclamationDTO);
         reclamation.setStatus(StatusReclamation.EN_ATTENTE);
@@ -76,7 +71,7 @@ public class ReclamationServiceImpl implements ReclamationService {
     }
 
     @Override
-    public ReclamationResponseDTO treatReclamation(final Long id, final ReclamationResponseDTO reclamationDTO) {
+    public ReclamationResponseDTO treatReclamation(final Long id, final ReclamationRequestDTO reclamationDTO) {
 
         // Recherche de la réclamation
         final Reclamation reclamation = reclamationRepository.findById(id)

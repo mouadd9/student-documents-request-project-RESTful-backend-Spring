@@ -10,7 +10,7 @@ public interface ReclamationService {
 
     List<ReclamationResponseDTO> getAllReclamations();
 
-    ReclamationResponseDTO treatReclamation(Long id, ReclamationResponseDTO reclamationDTO);
+    ReclamationResponseDTO treatReclamation(Long id, ReclamationRequestDTO reclamationDTO);
 
     ReclamationResponseDTO getReclamationById(Long id);
 }

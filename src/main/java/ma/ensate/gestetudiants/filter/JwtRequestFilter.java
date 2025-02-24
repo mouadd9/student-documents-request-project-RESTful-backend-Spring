@@ -9,6 +9,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -17,6 +20,8 @@ import java.io.IOException;
 
 @Component
 public class JwtRequestFilter extends OncePerRequestFilter {
+
+    private static final Logger logger = LoggerFactory.getLogger(JwtRequestFilter.class);
 
     @Autowired
     private CustomUserDetailsService userDetailsService;
@@ -41,7 +46,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                 username = jwtUtil.extractUsername(jwt);
             } catch (Exception e) {
                 // Invalid token
-                System.out.println("Invalid JWT Token");
+                logger.error("Invalid token: {}", e.getMessage());
             }
         }
 

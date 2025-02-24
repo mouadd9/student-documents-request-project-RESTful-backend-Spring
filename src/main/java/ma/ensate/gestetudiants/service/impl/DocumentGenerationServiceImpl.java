@@ -8,6 +8,7 @@ import ma.ensate.gestetudiants.repository.EtudiantRepository;
 import ma.ensate.gestetudiants.service.DocumentGenerationService;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.spring6.SpringTemplateEngine;
@@ -16,12 +17,11 @@ import org.xhtmlrenderer.pdf.ITextRenderer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import jakarta.transaction.Transactional;
-
 import java.io.ByteArrayOutputStream;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.concurrent.CompletableFuture;
 
 
 @Service
@@ -54,7 +54,7 @@ public class DocumentGenerationServiceImpl implements DocumentGenerationService 
             Context context = createContext(etudiant);
             String htmlContent = templateEngine.process("attestation", context);
             byte[] pdf = convertHtmlToPdf(htmlContent);
-            return pdf;
+            return CompletableFuture.completedFuture(pdf);
         } catch (Exception e) {
             logger.error("Error generating attestation PDF for Etudiant ID {}: {}", etudiantId, e.getMessage());
             throw new DocumentGenerationException("Erreur lors de la génération du attestation PDF.", e);
@@ -70,7 +70,7 @@ public class DocumentGenerationServiceImpl implements DocumentGenerationService 
             Context context = createContext(etudiant);
             String htmlContent = templateEngine.process("releve_de_notes", context);
             byte[] pdf = convertHtmlToPdf(htmlContent);
-            return pdf;
+            return CompletableFuture.completedFuture(pdf);
         } catch (Exception e) {
             logger.error("Error generating relevé de notes PDF for Etudiant ID {}: {}", etudiantId, e.getMessage());
             throw new DocumentGenerationException("Erreur lors de la génération du relevé de notes PDF.", e);

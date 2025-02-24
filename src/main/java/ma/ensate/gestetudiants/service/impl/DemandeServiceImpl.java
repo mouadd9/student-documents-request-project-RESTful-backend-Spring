@@ -85,10 +85,10 @@ public class DemandeServiceImpl implements DemandeService {
         final Demande demande = demandeRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Demande non trouvée avec l'ID: " + id));
 
-        demande.setStatus(StatusDemande.EN_COURS);
+        demande.setStatus(StatusDemande.APPROVEE);
         demande.setDateTraitement(new Date());
         demandeRepository.save(demande);
-        logger.info("Demande with ID: {} updated to EN_COURS.", id);
+        logger.info("Demande with ID: {} updated to APPROVEE.", id);
 
         // Process approval asynchronously
         processApprovalAsync(demande);
@@ -101,7 +101,6 @@ public class DemandeServiceImpl implements DemandeService {
         documentGenerationService.generateDocument(demande.getTypeDocument(), demande.getEtudiant().getId())
                 .thenCompose(pdfBytes -> notificationService.sendDemandeApprovedEmail(demande, pdfBytes))
                 .thenAccept(aVoid -> {
-                    demande.setStatus(StatusDemande.APPROVEE);
                     demande.setAsyncErrorMessage(null);
                     demandeRepository.save(demande);
                     logger.info("Demande with ID: {} approved successfully.", demande.getId());
@@ -122,10 +121,10 @@ public class DemandeServiceImpl implements DemandeService {
         final Demande demande = demandeRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Demande non trouvée avec l'ID: " + id));
 
-        demande.setStatus(StatusDemande.EN_COURS);
+        demande.setStatus(StatusDemande.REFUSEE);
         demande.setDateTraitement(new Date());
         demandeRepository.save(demande);
-        logger.info("Demande with ID: {} updated to EN_COURS.", id);
+        logger.info("Demande with ID: {} updated to REFUSEE.", id);
 
         // Process rejection asynchronously
         processRejectionAsync(demande);
@@ -137,7 +136,6 @@ public class DemandeServiceImpl implements DemandeService {
     public CompletableFuture<Void> processRejectionAsync(Demande demande) {
         return notificationService.sendDemandeRejectedEmail(demande)
                 .thenAccept(aVoid -> {
-                    demande.setStatus(StatusDemande.REFUSEE);
                     demande.setAsyncErrorMessage(null); // Effacer les erreurs précédentes
                     demandeRepository.save(demande);
                     logger.info("Demande with ID: {} rejected successfully.", demande.getId());

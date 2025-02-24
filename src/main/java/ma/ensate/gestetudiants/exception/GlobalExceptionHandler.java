@@ -57,14 +57,5 @@ public class GlobalExceptionHandler {
                 "Erreur lors de l'envoi de l'email: " + ex.getMessage());
         return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
-
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleGenericException(Exception ex) {
-        logger.error("An unexpected error occurred: {}", ex.getMessage());
-        ErrorResponse error = new ErrorResponse(
-                HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                "Une erreur inattendue s'est produite. Veuillez réessayer plus tard.");
-        return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
     
 }

@@ -18,11 +18,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-import lombok.RequiredArgsConstructor;
-
 @RestController
 @RequestMapping("/api/admin")
-@RequiredArgsConstructor
 public class AdminController {
 
     private final DemandeService demandeService;
@@ -30,6 +27,12 @@ public class AdminController {
     private final DocumentGenerationService documentGenerationService;
     private final StatistiquesService statistiquesService;
 
+    public AdminController(DemandeService demandeService, ReclamationService reclamationService, DocumentGenerationService documentGenerationService, StatistiquesService statistiquesService) {
+        this.demandeService = demandeService;
+        this.reclamationService = reclamationService;
+        this.documentGenerationService = documentGenerationService;
+        this.statistiquesService = statistiquesService;
+    }
     @GetMapping("/demandes")
     public ResponseEntity<List<DemandeResponseDTO>> getAllDemandes() {
         return ResponseEntity.ok(demandeService.getAllDemandes());
@@ -78,8 +81,8 @@ public class AdminController {
     @PutMapping("/reclamations/{id}/treat")
     public ResponseEntity<ReclamationResponseDTO> treatReclamation(
             @PathVariable Long id,
-            @Validated @RequestBody ReclamationResponseDTO reclamationResponseDTO) {
-        ReclamationResponseDTO treatedReclamation = reclamationService.treatReclamation(id, reclamationResponseDTO);
+            @Validated @RequestBody ReclamationRequestDTO reclamationDTO) {
+        ReclamationResponseDTO treatedReclamation = reclamationService.treatReclamation(id, reclamationDTO);
         return ResponseEntity.ok(treatedReclamation);
     }
 

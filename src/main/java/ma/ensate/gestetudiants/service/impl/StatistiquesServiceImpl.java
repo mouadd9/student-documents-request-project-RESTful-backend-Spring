@@ -97,11 +97,12 @@ public class StatistiquesServiceImpl implements StatistiquesService {
         final Map<String, Long> weeklyReclamationsMap = new HashMap<>();
         for (final Object[] record : weeklyReclamationsCounts) {
             final String dayName = (String) record[0];
-            final Long count = ((Number) record[1]).longValue();
+            final Long count = ((Number) record[2]).longValue(); // Changed index from record[1] to record[2]
             weeklyReclamationsMap.put(dayName, count);
         }
 
-        final List<String> weeklyLabelsEn = Arrays.asList("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday",
+        final List<String> weeklyLabelsEn = Arrays.asList("Monday", "Tuesday", "Wednesday", "Thursday", "Friday",
+                "Saturday",
                 "Sunday");
         final List<String> weeklyLabelsFr = Arrays.asList("Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim");
 
@@ -136,7 +137,8 @@ public class StatistiquesServiceImpl implements StatistiquesService {
         final String[] shortMonths = new DateFormatSymbols(Locale.FRENCH).getShortMonths();
         if (month >= 1 && month <= 12) {
             String abbreviated = shortMonths[month - 1];
-            // Supprimer les espaces ou caractères indésirables et ajouter un point si nécessaire
+            // Supprimer les espaces ou caractères indésirables et ajouter un point si
+            // nécessaire
             abbreviated = abbreviated.trim();
             if (!abbreviated.endsWith(".")) {
                 abbreviated += ".";

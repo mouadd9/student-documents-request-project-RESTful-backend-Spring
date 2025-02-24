@@ -47,12 +47,12 @@ public class NotificationServiceImpl implements NotificationService {
             if (demande.getTypeDocument() == TypeDocument.ATTESTATION_SCOLARITE) {
                 subject = "Votre demande d'attestation de scolarité a été approuvée";
                 body = "Bonjour " + demande.getEtudiant().getNom()
-                        + ",\n\nVotre demande d'attestation de scolarité a été approuvée.\nVeuillez trouver ci-joint le document demandé.\n\nCordialement,\nL'équipe Gestion Étudiants";
+                        + ",\n\nVotre demande d'attestation de scolarité a été approuvée.\nVeuillez trouver ci-joint le document demandé.\n\nCordialement,\nAdministration";
                 attachmentName = "Attestation_Scolarite.pdf";
             } else if (demande.getTypeDocument() == TypeDocument.RELEVE_NOTES) {
                 subject = "Votre demande de relevé de notes a été approuvée";
                 body = "Bonjour " + demande.getEtudiant().getNom()
-                        + ",\n\nVotre demande de relevé de notes a été approuvée.\nVeuillez trouver ci-joint le document demandé.\n\nCordialement,\nL'équipe Gestion Étudiants";
+                        + ",\n\nVotre demande de relevé de notes a été approuvée.\nVeuillez trouver ci-joint le document demandé.\n\nCordialement,\nAdministration";
                 attachmentName = "Releve_De_Notes.pdf";
             } else {
                 throw new EmailSendingException("Type de document inconnu: " + demande.getTypeDocument());
@@ -94,6 +94,7 @@ public class NotificationServiceImpl implements NotificationService {
         }
     }
 
+    @Async
     @Override
     public CompletableFuture<Void> sendReclamationTreatedEmail(Reclamation reclamation) {
         try {

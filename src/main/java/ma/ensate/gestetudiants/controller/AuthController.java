@@ -26,17 +26,12 @@ public class AuthController {
 
     @PostMapping("/login")
     public LoginResponseDTO login(@RequestBody LoginRequestDTO loginRequest) {
-        try {
-            // Authenticate the user
-            authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(
-                            loginRequest.getUsername(),
-                            loginRequest.getPassword()
-                    )
-            );
-        } catch (BadCredentialsException e) {
-            throw new RuntimeException("username et password incorrect", e);
-        }
+
+        // Authenticate the user
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        loginRequest.getUsername(),
+                        loginRequest.getPassword()));
 
         // If authentication is successful, generate JWT
         UserDetails userDetails = userDetailsService.loadUserByUsername(loginRequest.getUsername());
